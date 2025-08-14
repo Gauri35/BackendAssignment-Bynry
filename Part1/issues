@@ -1,0 +1,55 @@
+Below are the issues identified 
+
+A) Technical issues:
+
+1. No error handling - no try catch blocks for the database operations. 
+Impact: It will cause internal server errors, leading to failure in product creation without a clear message to the customer, which also leads to customer frustration and dissatisfaction.
+
+2. No input validation - Assumption that all keys exist in data (request.json) and the inputs are not validatedagainst their valid types which are allowed in the database.
+Impact: It can lead to missing or invalid fields (like price can be negative, qunatity can be null etc) which can cause DB errors or storing incorrect data, leading to unreliable inventory.
+
+3. No transaction present - there are two separate places where db commits take place, which can lead to inconsistency in data if one of the commits fail. 
+Impact: If the product is created but the inventory is not updated then it leads to data inconsistency as products will exist without inventory.
+
+4. No SKU checks - If a product with the sku in data already exists, then it will result in duplicates and db errors, which the current code doesn't handle either.
+Impact: Duplicate SKUs can can cause conflict in sales, inventory management, order fulfilling, as SKU is an unique identifier.
+
+5. Warehouse id - since a product can exist in multiple warehouses, creating a product and binding it to a single warehouse to a product and also updates the inventory count for a single warehouse_id only.
+Impact: Limiting a product to a single warehouse defeats the purpose of having multiple warehouses and having inventory management for the same.
+
+6. No authentication/authorization - there is no mechanism to enforce authorization policies. This is to allow only certain authorized people to create products. 
+Impact: Can lead to misuse or even lead to malicious use.
+
+7. No error logging - there is no mechanism to log errors, or even general info logging to identify requests coming to the endpoint and also for debugging in case of errors.
+Impact: When something goes wrong, it'll be very hard to debug -> which API caused the issue, what is the exact error etc.
+
+8. Price - since price has to be a decimal values (say upto 2 places), there is no validation and can result to rounding errors.
+Impact: Can cause errors while generating reports, invoices die to rounding errors.
+
+9. No rollback mechanism - in case of a failed db commit, or error in the method, there is no mechnaism to rollback the operations.
+Impact: If operation fails, partial data remains in the DB, for which manual cleanup will be required or will lead to data inconsistencies.
+
+10. Risk for further usage - if this data is used in the future, the correctness of the data is compromised and can result in returning incorrect data to the customers (i.e. companies).
+Impact: Incorrect data will be propogated to all other services.
+
+
+
+B) Business Logic issues:
+
+1. Wrong relationship design - products should be independent of warehouses and invemtory table shoudl be handling the mapping of products to warehouses.
+Impact: Not possible to track products across multiple warehouses.
+
+2. No SKU formats - usually a predefined sku formats are set in place in common use cases which is missing here.
+Impact: Leads to error prone systems with defects in label printing, barcode scanning etc.
+
+3. No check for existing products - while creating a product, no logical check is performed whether the product already exists or not.
+Impact: Confusion for warehouse and sales teams, with incorrect product and warehouse tracking.
+
+4. No supplier linkage - there is no link to the supplier for the products which can be important in case of compliance and reporting issues.
+Impact: Cannot trace the supplier to the product.
+
+5. No handling for bundle products - Requirements in other parts mention something about bundle products which is not handled here.
+Impact: Limits flexibility 
+
+
+
