@@ -45,10 +45,7 @@ Impact: Leads to error prone systems with defects in label printing, barcode sca
 3. No check for existing products - while creating a product, no logical check is performed whether the product already exists or not.
 Impact: Confusion for warehouse and sales teams, with incorrect product and warehouse tracking.
 
-4. No supplier linkage - there is no link to the supplier for the products which can be important in case of compliance and reporting issues.
-Impact: Cannot trace the supplier to the product.
-
-5. No handling for bundle products - Requirements in other parts mention something about bundle products which is not handled here.
+4. No handling for bundle products - Requirements in other parts mention something about bundle products which is not handled here.
 Impact: Limits flexibility 
 
 

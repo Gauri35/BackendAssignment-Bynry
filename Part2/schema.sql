@@ -36,6 +36,7 @@ CREATE TABLE products (
     is_bundle BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    low_stock_threshold INT NOT NULL DEFAULT 10
     CONSTRAINT fk_product_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
 );
 
@@ -80,3 +81,33 @@ CREATE TABLE inventory_history (
     CONSTRAINT fk_history_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
     CONSTRAINT fk_history_warehouse FOREIGN KEY (warehouse_id) REFERENCES warehouses(id) ON DELETE CASCADE
 );
+
+-- Look up products quickly by SKU within a company
+CREATE UNIQUE INDEX idx_products_company_sku ON products(company_id, sku);
+
+-- Query inventory fast by warehouse or product
+CREATE INDEX idx_inventory_warehouse ON inventory(warehouse_id);
+CREATE INDEX idx_inventory_product ON inventory(product_id);
+
+-- Look up history changes quickly by product
+CREATE INDEX idx_history_product_date ON inventory_history(product_id, changed_at DESC);
+
+-- Supplier product lookup
+CREATE INDEX idx_supplier_products_supplier ON supplier_products(supplier_id);
+
+-- Trigger to track inventory changes
+CREATE TRIGGER trg_inventory_change
+AFTER UPDATE ON inventory
+FOR EACH ROW
+BEGIN
+    IF NEW.quantity <> OLD.quantity THEN
+        INSERT INTO inventory_history (
+            product_id, warehouse_id, change_quantity, reason, changed_by
+        ) VALUES (
+            NEW.product_id, NEW.warehouse_id, NEW.quantity - OLD.quantity,
+            'SYSTEM UPDATE', CURRENT_USER()
+        );
+    END IF;
+END;
+
+
