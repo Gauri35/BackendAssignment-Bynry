@@ -1,0 +1,11 @@
+Inventory quantities in inventory table are always up to date and reflect the real physical stock.
+
+Each product can have zero or more suppliers through supplier_products mapping table.
+
+Sales data is reliable and recent — meaning sale_date timestamps are accurate and quantity is positive for completed sales.
+
+The last 30 days of sales are representative enough to calculate a meaningful daily sales average.
+
+All warehouses belong to a company via the company_id field in warehouses (already in your schema).
+
+Company IDs provided in the API are valid and match existing warehouses and products in the database.
